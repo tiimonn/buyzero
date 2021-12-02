@@ -95,7 +95,7 @@ function getDateTime() {
 		+ currentdate.getSeconds();
 }
 
-// const message = ``
+
 
 (async () => {
 	let available = false;
@@ -105,10 +105,16 @@ function getDateTime() {
 	while (available == false) {
 		let res = await printObjectData(process.env.URL);
 
+		const message = '✅ The Product: "' + res.titel + '" is available again ✅\n🧭 Last time checked was on ' + getDateTime() + '\n💻 Get it now at ' + res.url + '\n📊 ' + res.preis + '\n🚗 ' + res.availability + '\n📗 ' + res.ausfuehrung;
+
+		const message2 = '✅ The Product: "' + res.titel + '" is available again ✅  🧭 Last time checked was on ' + getDateTime() + '🧭  💻 Get it now at ' + res.url + ' 💻  📊 ' + res.preis + '📊  🚗 ' + res.availability + '🚗  📗 ' + res.ausfuehrung.join(", ") + ' 📗';
+
 		if (res.lagerstatus === "Auf Lager") available = true;
 		if (available) {
 			// Create a message object.
-			new Message('Some <b>important</b> message', res.titel + ' is available!', Message.PRIORITY_HIGH, Message.LEVEL_INFO).send(token);
+			new Message(message2, res.titel + ' is available on ' + getDateTime(), Message.PRIORITY_HIGH, Message.LEVEL_INFO).send(token);
+			console.log(message);
+			console.log("\n");
 		}
 		else console.log(chalk.gray.bold.italic("unavailable on " + getDateTime() + "...\n"));
 		await timersPromises.setTimeout(process.env.DELAY_IN_SECONDS * 1000);
