@@ -109,10 +109,12 @@ function getDateTime() {
 	console.log(chalk.green("Starting tracking of product..."));
 	console.log("\n");
 
+	let message = "";
+
 	while (available == false) {
 		let res = await printObjectData(process.env.URL);
 
-		const message = '✅ The Product: "' + res.titel + '" is available again ✅\n🧭 Last time checked was on ' + getDateTime() + '\n💻 Get it now at ' + res.url + '\n📊 ' + res.preis + '\n🚗 ' + res.availability + '\n📗 ' + res.ausfuehrung;
+		message = '✅ The Product: "' + chalk.bold(res.titel) + '" is available again ✅\n🧭 Last time checked was on ' + getDateTime() + '\n💻 Get it now at ' + res.url + '\n📊 ' + res.preis + '\n🚗 ' + res.availability + '\n📗 ' + res.ausfuehrung.join(", ");
 
 		const message2 = '✅ The Product: "' + res.titel + '" is available again ✅  🧭 Last time checked was on ' + getDateTime() + '🧭  💻 Get it now at ' + res.url + ' 💻  📊 ' + res.preis + '📊  🚗 ' + res.availability + '🚗  📗 ' + res.ausfuehrung.join(", ") + ' 📗';
 
@@ -120,12 +122,18 @@ function getDateTime() {
 		if (available) {
 			// Create a message object.
 			if (process.env.TOKEN !== undefined) new Message(message2, res.titel + ' is available on ' + getDateTime(), Message.PRIORITY_HIGH, Message.LEVEL_INFO).send(token);
-			console.log(message);
 			console.log("\n");
+			break;
 		}
-		else console.log(chalk.gray.bold.italic("unavailable on " + getDateTime() + "...\n"));
+		console.log(chalk.gray.bold.italic("unavailable on " + getDateTime() + "..."));
+		console.log(chalk.gray.bold.italic("trying again in  " + process.env.DELAY_IN_SECONDS + " seconds...\n"));
 		await timersPromises.setTimeout(process.env.DELAY_IN_SECONDS * 1000);
 	}
+	console.log(chalk.gray.bold.italic("program stops in 10s"));
+	console.log("\n");
+	await timersPromises.setTimeout(10000);
+	console.log(message);
+	console.log("\n");
 
 	console.log(
 		chalk.red("Tracking stopped on " + chalk.gray.underline(getDateTime()) + chalk.red(" due to item being ")) + chalk.bold.green("available") + chalk.red(" again."));
