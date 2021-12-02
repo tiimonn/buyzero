@@ -25,7 +25,7 @@
 
 ### run using docker
 
-    docker run -d -e URL="https://buyzero.de/products/raspberry-pi-4-model-b-8gb" -e TOKEN=<your_token_here> -e DELAY_IN_SECONDS=300 --name pi4-8gb tmnn/buyzero:alpha
+    docker run -dit -e URL="https://buyzero.de/products/raspberry-pi-4-model-b-8gb" -e TOKEN=<your_token_here> -e DELAY_IN_SECONDS=300 --name pi4-8gb tmnn/buyzero:alpha
 
 ### run local
 
