@@ -1,10 +1,6 @@
 #!/usr/bin/env node
 require('dotenv').config()
-var http = require('http');
-var https = require('https');
-var path = require('path');
 var chalk = require('chalk');
-var request = require('request');
 var cheerio = require('cheerio');
 const axios = require('axios');
 
