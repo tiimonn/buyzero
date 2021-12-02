@@ -8,10 +8,6 @@
 
 ---
 
-[TOCM]
-
-[TOC]
-
 ## Features
 
 - track availability of Products on https://buyzero.de/
@@ -27,11 +23,11 @@
 
 ---
 
-###run using docker
+### run using docker
 
     docker run -d -e URL="https://buyzero.de/products/raspberry-pi-4-model-b-8gb" -e TOKEN=<your_token_here> -e DELAY_IN_SECONDS=300 --name pi4-8gb tmnn/buyzero:alpha
 
-###run local
+### run local
 
     git clone https://github.com/tiimonn/buyzero.git && cd buyzero/
     echo -e 'TOKEN=your_token\nURL="your_product_url"\nDELAY_IN_SECONDS=' >> .env
