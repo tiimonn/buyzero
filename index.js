@@ -6,7 +6,7 @@ const axios = require('axios');
 
 const timersPromises = require('timers/promises');
 if (process.env.DELAY_IN_SECONDS === undefined) process.env.DELAY_IN_SECONDS = 60
-if (process.env.URL === undefined) process.env.URL = "https://buyzero.de/products/raspberry-pi-4-model-b-8gb?variant=31817426698342"
+if (process.env.URL === undefined || process.env.URL === "your_product_url") process.env.URL = "https://buyzero.de/products/raspberry-pi-4-model-b-8gb?variant=31817426698342"
 
 if (process.env.TOKEN === undefined) {
 	console.log('error', (Error('Cannot run without notify.events token')).message, (Error('Cannot run without notify.events token')).stack)

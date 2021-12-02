@@ -33,4 +33,7 @@
 
 ###run local
 
-    git clone https://github.com/tiimonn/buyzero.git
+    git clone https://github.com/tiimonn/buyzero.git && cd buyzero/
+    echo -e 'TOKEN=your_token\nURL="your_product_url"\nDELAY_IN_SECONDS=' >> .env
+    npm install
+    npm run start
