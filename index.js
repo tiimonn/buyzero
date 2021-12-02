@@ -9,6 +9,13 @@ var cheerio = require('cheerio');
 const axios = require('axios');
 
 const timersPromises = require('timers/promises');
+if (process.env.DELAY_IN_SECONDS === undefined) process.env.DELAY_IN_SECONDS = 60
+if (process.env.URL === undefined) process.env.URL = "https://buyzero.de/products/raspberry-pi-4-model-b-8gb?variant=31817426698342"
+
+if (process.env.TOKEN === undefined) {
+	console.log('error', (Error('Cannot run without notify.events token')).message, (Error('Cannot run without notify.events token')).stack)
+	process.exit(1)
+}
 
 
 let config = {
@@ -112,7 +119,7 @@ function getDateTime() {
 		if (res.lagerstatus === "Auf Lager") available = true;
 		if (available) {
 			// Create a message object.
-			new Message(message2, res.titel + ' is available on ' + getDateTime(), Message.PRIORITY_HIGH, Message.LEVEL_INFO).send(token);
+			if (process.env.TOKEN !== undefined) new Message(message2, res.titel + ' is available on ' + getDateTime(), Message.PRIORITY_HIGH, Message.LEVEL_INFO).send(token);
 			console.log(message);
 			console.log("\n");
 		}
@@ -124,3 +131,4 @@ function getDateTime() {
 		chalk.red("Tracking stopped on " + chalk.gray.underline(getDateTime()) + chalk.red(" due to item being ")) + chalk.bold.green("available") + chalk.red(" again."));
 	console.log("\n");
 })();
+
