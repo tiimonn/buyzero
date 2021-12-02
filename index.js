@@ -1,89 +1,120 @@
 #!/usr/bin/env node
+require('dotenv').config()
 var http = require('http');
+var https = require('https');
 var path = require('path');
 var chalk = require('chalk');
 var request = require('request');
 var cheerio = require('cheerio');
+const axios = require('axios');
+
+const timersPromises = require('timers/promises');
+
+
+let config = {
+	headers: {
+		'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
+	}
+}
+
+const Message = require('@notify.events/nodejs').Message;
+const { setTimeout } = require('timers/promises');
+
+// Defining channel token.
+// You get this token when creating a channel on the Notify.Events service.
+const token = process.env.TOKEN;
 
 
 
-function run(url) {
-	// Define the options such as headers and the url
-	const options = {
+// Attach the file to the message.
+// message.addFile('path\to\local\file');
+
+
+
+
+async function getHtmlData(url) {
+	let res = await axios.get(url, config)
+	return res;
+}
+
+async function processHtmlData(url) {
+	let response = await getHtmlData(url);
+	// Load html into cheerio
+	var $ = cheerio.load(response.data);
+
+	// Create Array of Auswahlmöglichkeiten
+	const auswaehl = () => {
+		var arr = new Array();
+		$('span.product-form__selected-value').each(function () {
+			arr.push($(this).text())
+		})
+		return arr;
+	}
+
+	// Create the data object of the product
+	obj = {
+		titel: $('span.breadcrumb__link').text().trim(),
 		url: url,
-		headers: {
-			'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582"
-		}
+		ausfuehrung: auswaehl(),
+		preis: $('span.price').text().trim().match(/^\d+|\d+\b|\d+(?=\w)/g) + " €",
+		lagerstatus: $('span.product-form__inventory').text().trim(),
+		availability: $('span.product-meta__available-text').text().trim()
 	};
+	return obj;
+}
 
-	request(options, function (err, res, html) {
-		// Load html into cheerio
-		var $ = cheerio.load(html);
-
-		// Create Array of Auswahlmöglichkeiten
-		const auswaehl = () => {
-			var arr = new Array();
-			$('span.product-form__selected-value').each(function () {
-				arr.push($(this).text())
-			})
-			return arr;
-		}
-
-		// Create the data object of the product
-		return obj = {
-			titel: $('span.breadcrumb__link').text().trim(),
-			url: url,
-			ausfuehrung: auswaehl(),
-			preis: $('span.price').text().trim().match(/^\d+|\d+\b|\d+(?=\w)/g) + " €",
-			lagerstatus: $('span.product-form__inventory').text().trim(),
-			availability: $('span.product-meta__available-text').text().trim()
-		};
-	});
+async function printObjectData(url) {
+	let object = await processHtmlData(url);
 
 	// Define the current stock text color
 	const lager = () => {
-		var text = obj.lagerstatus;
-		if (text === "Ausverkauft") return chalk.red(text);
-		if (text === "Auf Lager") return chalk.green(text);
-		return chalk.dim.italic(text);
+		if (object.lagerstatus === "Ausverkauft") return chalk.red(object.lagerstatus);
+		if (object.lagerstatus === "Auf Lager") return chalk.green(object.lagerstatus);
+		return chalk.dim.italic(object.lagerstatus);
 	}
 
 	// Print the whole data to the console
-	console.log(chalk.blue.underline.bold("Titel: ") + "\n" + obj.titel);
+	console.log(chalk.blue.underline.bold("Titel: ") + "\n" + object.titel);
 	console.log(chalk.blue.underline.bold("URL: ") + "\n" + chalk.dim.italic.gray(url));
-	console.log(chalk.blue.underline.bold("Ausgewählte Ausführung: ") + "\n" + obj.ausfuehrung.join("\n"));
-	console.log(chalk.blue.underline.bold("Preis: ") + "\n" + obj.preis);
+	console.log(chalk.blue.underline.bold("Ausgewählte Ausführung: ") + "\n" + object.ausfuehrung.join("\n"));
+	console.log(chalk.blue.underline.bold("Preis: ") + "\n" + object.preis);
 	console.log(chalk.blue.underline.bold("Lagerstatus: ") + "\n" + lager());
-	console.log(chalk.blue.underline.bold("Available Text: ") + "\n" + obj.availability);
+	console.log(chalk.blue.underline.bold("Available Text: ") + "\n" + object.availability);
 	console.log("\n");
 
+	return object;
 }
 
-
-
-// Lagerstatus
-// $('span[class="product-form__inventory inventory"]')
-// Titel
-// $('span[class="breadcrumb__link"]')
-// Available Text
-// $('span[class="product-meta__available-text"]')
-// Auswählbare Ausführungen
-// $('span[class="product-form__selected-value"]')
-// Preis
-// $('span[class="price"]')
-
-
-
-const track = theurl => {
-	// First run
-	run(theurl).then((message) => console.log(message));
-
+function getDateTime() {
+	var currentdate = new Date();
+	return currentdate.getFullYear() + "-"
+		+ (currentdate.getMonth() + 1) + "-"
+		+ currentdate.getDate() + " @ "
+		+ currentdate.getHours() + ":"
+		+ currentdate.getMinutes() + ":"
+		+ currentdate.getSeconds();
 }
 
+// const message = ``
 
+(async () => {
+	let available = false;
+	console.log(chalk.green("Starting tracking of product..."));
+	console.log("\n");
 
-console.log("\n");
-track('https://buyzero.de/products/raspberry-pi-4-model-b-8gb')
-// run('https://buyzero.de/products/raspberry-pi-4-model-b-8gb?variant=40326644564148')
-// run('https://buyzero.de/products/raspberry-pi-4b?variant=40326653542580')
-// run('https://buyzero.de/products/flirc-gehause-fur-raspberry-pi-4')
+	while (available == false) {
+		let res = await printObjectData(process.env.URL);
+
+		if (res.lagerstatus === "Auf Lager") available = true;
+		if (available) {
+			// Create a message object.
+			new Message('Some <b>important</b> message', res.titel + ' is available!', Message.PRIORITY_HIGH, Message.LEVEL_INFO).send(token);
+		}
+		else console.log(chalk.gray.bold.italic("unavailable on " + getDateTime() + "...\n"));
+		await timersPromises.setTimeout(process.env.DELAY_IN_SECONDS * 1000);
+	}
+
+	console.log(
+		chalk.red("Tracking stopped on " + chalk.gray.underline(getDateTime()) + chalk.red(" due to item being ")) + chalk.bold.green("available") + chalk.red(" again."));
+	console.log("\n");
+})();
